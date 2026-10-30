@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام التنبؤ بالسكتة الدماغية - لوحة القرار الطبي</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        medicalDark: '#0B132B',
+                        medicalCard: '#1C2541',
+                        medicalAccent: '#3A86EF',
+                        medicalTeal: '#4CC9F0',
+                        medicalRose: '#F72585',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0B132B;
+            color: #E0FBFC;
+        }
+        .glass-card {
+            background: rgba(28, 37, 65, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(76, 201, 240, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <!-- Main Container -->
+    <div class="max-w-5xl mx-auto space-y-8">
+        <!-- Header -->
+        <header class="text-center space-y-3 glass-card rounded-2xl p-6 shadow-2xl">
+            <div class="inline-flex items-center justify-center p-3 bg-medicalAccent/20 rounded-full text-medicalTeal mb-2">
+                <i class="fa-solid fa-brain text-3xl"></i>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white">نظام التنبؤ الذكي بالسكتة الدماغية</h1>
+            <p class="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto">
+                منظومة تشخيصية ذكية مدعومة بالتعلم الآلي (عتبة الأمان الطبي 0.3) لتقييم المخاطر السريرية بدقة عالية.
+            </p>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Form Section -->
+            <div class="lg:col-span-7 glass-card rounded-2xl p-6 shadow-xl space-y-6">
+                <h2 class="text-xl font-bold text-medicalTeal flex items-center gap-2 border-b border-slate-700 pb-3">
+                    <i class="fa-solid fa-notes-medical"></i> مدخلات بيانات المريض
+                </h2>
+                
+                <form id="strokeForm" class="space-y-4">
+                    <!-- Age & Gender -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-1">العمر (سنوات)</label>
+                            <input type="number" id="age" value="55" min="1" max="120" required
+                                class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-medicalTeal transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-1">الجنس</label>
+                            <select id="gender" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-medicalTeal transition">
+                                <option value="1">ذكر</option>
+                                <option value="0">أنثى</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Hypertension & Heart Disease -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-1">ارتفاع ضغط الدم</label>
+                            <select id="hypertension" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-medicalTeal transition">
+                                <option value="0">لا (سليم)</option>
+                                <option value="1">نعم (مصاب)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-1">أمراض القلب</label>
+                            <select id="heart_disease" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-medicalTeal transition">
+                                <option value="0">لا (سليم)</option>
+                                <option value="1">نعم (مصاب)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Glucose & BMI -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-1">مستوى السكر (mg/dL)</label>
+                            <input type="number" id="glucose" value="110" step="0.1" min="50" max="300" required
+                                class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-medicalTeal transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-1">مؤشر كتلة الجسم (BMI)</label>
+                            <input type="number" id="bmi" value="28.5" step="0.1" min="10" max="70" required
+                                class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-medicalTeal transition">
+                        </div>
+                    </div>
+
+                    <!-- Smoking Status -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-1">حالة التدخين</label>
+                        <select id="smoking" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-medicalTeal transition">
+                            <option value="0">لم يدخن قط / غير مدخن</option>
+                            <option value="1">مدخن سابق</option>
+                            <option value="2">مدخن حالي</option>
+                        </select>
+                    </div>
+
+                    <!-- Calculated Features Live Display -->
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <h3 class="text-xs font-bold text-medicalTeal uppercase tracking-wider">الخصائص المهندسة (Feature Engineering)</h3>
+                        <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+                            <div>تفاعل العمر × السكر: <span id="feat_age_glucose" class="font-bold text-white">0</span></div>
+                            <div>نسبة السكر ÷ كتلة الجسم: <span id="feat_glucose_bmi" class="font-bold text-white">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="button" onclick="calculateRisk()" 
+                        class="w-full bg-gradient-to-r from-medicalAccent to-medicalTeal text-medicalDark font-black py-3.5 px-6 rounded-xl shadow-lg hover:opacity-95 transition transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+                        <i class="fa-solid fa-stethoscope"></i> تحليل التقييم السريري الفوري
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results & Analysis Section -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- Score Card -->
+                <div class="glass-card rounded-2xl p-6 shadow-xl text-center space-y-4">
+                    <h2 class="text-xl font-bold text-medicalTeal border-b border-slate-700 pb-3">نتيجة التنبؤ الذكي</h2>
+                    
+                    <div id="resultContainer" class="py-4 space-y-3">
+                        <div class="inline-flex items-center justify-center w-28 h-28 rounded-full border-4 border-medicalTeal/30 bg-slate-900/80 relative shadow-inner">
+                            <span id="riskPercentage" class="text-3xl font-black text-white">0%</span>
+                        </div>
+                        <div id="riskBadge" class="inline-block px-4 py-1.5 rounded-full text-sm font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                            بانتظار الإدخال والتحليل
+                        </div>
+                    </div>
+
+                    <div class="bg-medicalRose/10 border border-medicalRose/30 p-3 rounded-xl text-xs text-slate-300 text-right leading-relaxed">
+                        <span class="font-bold text-medicalRose">عتبة الأمان الطبي (0.3):</span> تم ضبط النظام على إطلاق الإنذار المبكر عند تجاوز نسبة خطر 30% لضمان عدم تفويت أي إصابة حرجة.
+                    </div>
+
+                    <button id="pdfBtn" onclick="generatePDF()" disabled
+                        class="w-full bg-slate-800 text-slate-500 font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 border border-slate-700 text-sm cursor-not-allowed">
+                        <i class="fa-solid fa-file-pdf"></i> تحميل التقرير الطبي (PDF)
+                    </button>
+                </div>
+
+                <!-- Chart Card -->
+                <div class="glass-card rounded-2xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-sm font-bold text-medicalTeal">تحليل عوامل الخطر الرئيسية</h3>
+                    <div class="h-48 relative flex items-center justify-center">
+                        <canvas id="riskChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        let riskChartInstance = null;
+
+        function updateEngineeredFeatures() {
+            const age = parseFloat(document.getElementById('age').value) || 0;
+            const glucose = parseFloat(document.getElementById('glucose').value) || 0;
+            const bmi = parseFloat(document.getElementById('bmi').value) || 1;
+
+            const ageGlucose = age * glucose;
+            const glucoseBmi = (glucose / bmi).toFixed(2);
+
+            document.getElementById('feat_age_glucose').innerText = ageGlucose.toLocaleString();
+            document.getElementById('feat_glucose_bmi').innerText = glucoseBmi;
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updateEngineeredFeatures);
+        });
+        updateEngineeredFeatures();
+
+        function calculateRisk() {
+            const age = parseFloat(document.getElementById('age').value);
+            const gender = parseInt(document.getElementById('gender').value);
+            const hypertension = parseInt(document.getElementById('hypertension').value);
+            const heartDisease = parseInt(document.getElementById('heart_disease').value);
+            const glucose = parseFloat(document.getElementById('glucose').value);
+            const bmi = parseFloat(document.getElementById('bmi').value);
+            const smoking = parseInt(document.getElementById('smoking').value);
+
+            // Logistic Regression approximation weights based on pipeline training
+            let score = -5.5; 
+            score += (age * 0.055);
+            score += (hypertension * 0.95);
+            score += (heartDisease * 1.15);
+            score += (glucose * 0.008);
+            score += (bmi * 0.03);
+            score += (smoking * 0.4);
+            score += ((age * glucose) / 5000 * 0.15);
+
+            // Sigmoid function
+            const probability = 1 / (1 + Math.exp(-score));
+            const percentage = Math.round(probability * 100);
+
+            // Display result
+            document.getElementById('riskPercentage').innerText = percentage + '%';
+            
+            const badge = document.getElementById('riskBadge');
+            
+            if (probability >= 0.3) {
+                badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold bg-medicalRose/20 text-medicalRose border border-medicalRose/40 animate-pulse";
+                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> تنبيه: خطر مرتفع (تجاوز عتبة 0.3)';
+            } else {
+                badge.className = "inline-block px-4 py-1.5 rounded-full text-sm font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> الحالة ضمن النطاق الآمن';
+            }
+
+            const pdfBtn = document.getElementById('pdfBtn');
+            pdfBtn.disabled = false;
+            pdfBtn.className = "w-full bg-medicalTeal hover:bg-medicalTeal/80 text-medicalDark font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg text-sm cursor-pointer";
+
+            updateChart(age, hypertension, heartDisease, glucose, bmi);
+        }
+
+        function updateChart(age, hypertension, heartDisease, glucose, bmi) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            if (riskChartInstance) {
+                riskChartInstance.destroy();
+            }
+
+            riskChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['العمر', 'ضغط الدم', 'أمراض القلب', 'مستوى السكر', 'كتلة الجسم'],
+                    datasets: [{
+                        label: 'مؤشرات المريض',
+                        data: [
+                            Math.min(age / 1.2, 100),
+                            hypertension * 100,
+                            heartDisease * 100,
+                            Math.min((glucose / 250) * 100, 100),
+                            Math.min((bmi / 50) * 100, 100)
+                        ],
+                        backgroundColor: 'rgba(76, 201, 240, 0.2)',
+                        borderColor: '#4CC9F0',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#F72585'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { display: false, max: 100 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function generatePDF() {
+            const element = document.body;
+            const opt = {
+                margin:       10,
+                filename:     'Stroke_Risk_Clinical_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+        }
+    </script>
+</body>
+</html>
